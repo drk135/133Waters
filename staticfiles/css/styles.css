@@ -1,0 +1,79 @@
+/* สไตล์หลักของเว็บไซต์ */
+body {
+    font-family: 'Sarabun', sans-serif;
+}
+
+/* สไตล์สำหรับโลโก้ */
+.text-center img {
+    transition: transform 0.3s ease;
+    max-height: 100px;
+    margin-bottom: 1rem;
+}
+
+.text-center img:hover {
+    transform: scale(1.1);
+}
+
+/* สไตล์สำหรับการ์ด */
+.card {
+    transition: transform 0.2s ease;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* สไตล์สำหรับปุ่ม */
+.btn {
+    transition: all 0.3s ease;
+    border-radius: 5px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+/* สไตล์สำหรับตาราง */
+.table {
+    background-color: white;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+
+/* สไตล์สำหรับการแบ่งหน้า */
+.pagination .page-link {
+    color: #0d6efd;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    z-index: 2;
+    color: #024dbc;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* สไตล์สำหรับฟอร์มค้นหา */
+.search-form input {
+    border-radius: 20px 0 0 20px;
+}
+
+.search-form button {
+    border-radius: 0 20px 20px 0;
+}

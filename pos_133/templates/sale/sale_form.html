@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if sale %}
+                            แก้ไขข้อมูลการขาย
+                        {% else %}
+                            เพิ่มการขายใหม่
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">กรุณาตรวจสอบข้อมูล</h5>
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <p class="mb-0">{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                    <span class="text-danger">*</span>
+                                {% endif %}
+                            </label>
+
+                            {% if field.name == 'productid' %}
+                            <select name="productid" id="productid" class="form-select" required>
+                                <option value="">เลือกสินค้า</option>
+                                {% for product in products %}
+                                    <option value="{{ product.pk }}" 
+                                            data-price="{{ product.pname.market_price }}"
+                                            data-stock="{{ product.quantity_in_stock }}"
+                                            data-manufacture-date="{{ product.manufacture_date }}">
+                                        {{ product.pname }} 
+                                        (คงเหลือ: {{ product.quantity_in_stock }} ชิ้น, 
+                                        วันที่ผลิต: {{ product.manufacture_date|date:"d/m/Y" }})
+                                    </option>
+                                {% empty %}
+                                    <option value="" disabled>ไม่มีสินค้าที่พร้อมขาย</option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
+
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            
+                            {% if field.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in field.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'sale_list' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> ยกเลิก
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> บันทึก
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productSelect = document.getElementById('productid');
+    const quantityInput = document.getElementById('id_sale_quantity');
+    
+    productSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (!selectedOption.value) return;
+
+        const currentStock = parseInt(selectedOption.dataset.stock);
+        
+        // อัพเดท max ของ input quantity
+        quantityInput.max = currentStock;
+        quantityInput.placeholder = `สูงสุด ${currentStock} ชิ้น`;
+        
+        // ถ้าไม่มีของในสต็อก
+        if (currentStock <= 0) {
+            alert('สินค้าหมด!');
+            this.value = '';
+            quantityInput.value = '';
+        }
+    });
+    
+    // ตรวจสอบจำนวนที่สั่งซื้อต้องไม่เกินของในสต็อก
+    quantityInput.addEventListener('change', function() {
+        const selectedOption = productSelect.options[productSelect.selectedIndex];
+        if (!selectedOption.value) return;
+        
+        const currentStock = parseInt(selectedOption.dataset.stock);
+        const orderQuantity = parseInt(this.value);
+        
+        if (orderQuantity > currentStock) {
+            alert(`สินค้าคงเหลือไม่พอ (มี ${currentStock} ชิ้น)`);
+            this.value = currentStock;
+        }
+    });
+});
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productSelect = document.getElementById('productid');
+        const options = productSelect.options;
+    
+        // ค้นหาวันที่เก่าที่สุด
+        let oldestDate = null;
+        let oldestOption = null;
+    
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+            const manufactureDate = option.dataset.manufactureDate;
+    
+            if (manufactureDate) {
+                const date = new Date(manufactureDate);
+                if (!oldestDate || date < oldestDate) {
+                    oldestDate = date;
+                    oldestOption = option;
+                }
+            }
+        }
+    
+        // ทำให้ตัวเลือกที่มีวันที่เก่าที่สุดกระพริบ
+        if (oldestOption) {
+            oldestOption.classList.add('blink-option');
+        }
+    });
+    
+    // CSS สำหรับกระพริบ
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .blink-option {
+            animation: blink-animation 1s infinite;
+            color: red;
+            font-weight: bold;
+        }
+    
+        @keyframes blink-animation {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    </script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- สรุปข้อมูลวันนี้ -->
+    <div class="row g-4 mb-4">
+        <!-- ยอดขาย -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-cash-register fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-1">ยอดขายวันนี้</h5>
+                            <h3 class="mb-0">{{ today_summary.revenue|floatformat:2 }} บาท</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ต้นทุน -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-danger bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-tags fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-1">ต้นทุนวันนี้</h5>
+                            <h3 class="mb-0">{{ today_summary.cost|floatformat:2 }} บาท</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- กำไร -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-chart-line fa-2x text-success"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+    <h5 class="mb-1">กำไรวันนี้</h5>
+    <h3 class="mb-0 blink-text">{{ today_summary.profit|floatformat:2 }} บาท</h3>
+    <small class="text-muted">อัตรากำไร {{ today_summary.margin|floatformat:1 }}%</small>
+</div>
+<style>
+/* เพิ่ม CSS กระพริบ */
+.blink-text {
+    animation: blink 2s steps(2, start) infinite;
+}
+@keyframes blink {
+    to {
+        visibility: hidden;
+    }
+}
+</style>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- จำนวนลูกค้า -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-users fa-2x text-info"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-1">จำนวนลูกค้า</h5>
+                            <h3 class="mb-0">{{ customer_count }} ราย</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- กราฟแสดงยอดขายรายเดือน -->
+
+  
+    <!-- ตารางสรุปรายเดือน -->
+    <div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">รายละเอียดรายเดือน</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>เดือน</th>
+                                <th class="text-end">ยอดขาย</th>
+                                <th class="text-end">ต้นทุน</th>
+                                <th class="text-end">ค่าใช้จ่าย</th>
+                                <th class="text-end">กำไร</th>
+                                <th class="text-end">อัตรากำไร</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in monthly_data %}
+                            <tr>
+                                <td>{{ data.month }}</td>
+                                <td class="text-end">{{ data.revenue|floatformat:2 }}</td>
+                                <td class="text-end">{{ data.cost|floatformat:2 }}</td>
+                                <td class="text-end">{{ data.expense|floatformat:2 }}</td>
+                               <td class="text-end">
+    <span class="{% if data.profit > 0 %}text-success{% else %}text-danger{% endif %} blink-text">
+        {{ data.profit|floatformat:2 }}
+    </span>
+</td>
+<td class="text-end">{{ data.margin|floatformat:1 }}%</td>
+<!-- ...existing code... -->
+
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ months|safe }},
+            datasets: [{
+                label: 'ยอดขาย',
+                data: {{ monthly_sales }},
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1
+            },
+            {
+                label: 'ต้นทุน',
+                data: {{ monthly_costs }},
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgb(255, 99, 132)',
+                borderWidth: 1
+            },
+            {
+                label: 'กำไร',
+                data: {{ monthly_profits }},
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgb(75, 192, 192)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

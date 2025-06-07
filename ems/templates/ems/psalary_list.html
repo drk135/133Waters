@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div class="d-flex align-items-center mb-2 mb-md-0">
+                    <h4 class="mb-0 me-3">รายการเงินเดือน</h4>
+                    <div class="badge bg-primary">
+                        ทั้งหมด: {{ psalaries.count }}
+                    </div>
+                </div>
+
+                <!-- Search Form -->
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <form method="get" class="d-flex">
+                        <div class="input-group">
+                            <select name="year" class="form-select">
+                                <option value="">เลือกปี</option>
+                                {% for year in years %}
+                                    <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>
+                                        {{ year }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <select name="month" class="form-select">
+                                <option value="">เลือกเดือน</option>
+                                {% for month in months %}
+                                    <option value="{{ month.0 }}" {% if selected_month == month.0 %}selected{% endif %}>
+                                        {{ month.1 }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="search" 
+                                   value="{{ search_query }}"
+                                   placeholder="ค้นหาพนักงาน...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            {% if search_query or selected_year or selected_month %}
+                            <a href="{% url 'ems:psalary_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Action Button -->
+                <div>
+                    <a href="{% url 'ems:psalary_create' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> สร้างรายการเงินเดือนใหม่
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>พนักงาน</th>
+                            <th>งวดเดือน</th>
+                            <th>เงินเดือน</th>
+                            <th>วันทำงาน</th>
+                            <th>ชั่วโมงทำงาน</th>
+                            <th>ชั่วโมง OT</th>
+                            <th>รวมสุทธิ</th>
+                            <th>เลขที่บัญชี/ธนาคาร</th>                            
+                            <th class="text-center">ดำเนินการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for psalary in psalaries %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if psalary.employee.profile_picture %}
+                                        <img src="{{ psalary.employee.profile_picture.url }}" 
+                                             class="rounded-circle me-2" 
+                                             width="32" height="32"
+                                             alt="{{ psalary.employee.first_name }}">
+                                    {% else %}
+                                        <div class="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                             style="width: 32px; height: 32px;">
+                                            <i class="fas fa-user text-white small"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold">{{ psalary.employee.first_name }} {{ psalary.employee.last_name }}</div>
+                                        <div class="text-muted small">รหัส: {{ psalary.employee.employee_id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                           
+                            <td>{{ psalary.get_month_display }} {{ psalary.year }}</td>
+                            <td>{{ psalary.base_salary|floatformat:2 }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2 {% if psalary.days_worked == psalary.plan_days_worked %}text-success{% elif psalary.days_worked == 0 %}text-danger{% else %}text-warning{% endif %}">
+                                        {{ psalary.days_worked }}/{{ psalary.plan_days_worked }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                {{ psalary.hrs_worked }}/{{ psalary.plan_hrs_worked }}
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <div>จ-ส: {{ psalary.m_sat_overtime_hrs }} ชม.</div>
+                                    <div>อาทิตย์: {{ psalary.sun_overtime_hrs }} ชม.</div>
+                                    <div>วันหยุด: {{ psalary.holiday_overtime_hrs }} ชม.</div>
+                                </div>
+                            </td>
+                            <td class="fw-bold">{{ psalary.calculate_net_salary|floatformat:2 }}</td>
+                             
+                             <td>{{ psalary.employee.bank_account }} : {{ psalary.employee.bank_name }}</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="{% url 'ems:psalary_edit' psalary.pk %}" 
+                                       class="btn btn-sm btn-warning me-1"
+                                       title="แก้ไขรายการ">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'ems:psalary_delete' psalary.pk %}" 
+                                       class="btn btn-sm btn-danger"
+                                       title="ลบรายการ">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    <a href="{% url 'ems:psalary_print' psalary.pk %}" 
+                                       class="btn btn-sm btn-info me-1"
+                                       target="_blank"
+                                       title="พิมพ์สลิปเงินเดือน">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
+                                    <p class="mb-0">ไม่พบข้อมูลเงินเดือน</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="d-flex justify-content-center align-items-center mt-4">
+                    <div>
+                        <p class="mb-0">แสดง {{ psalaries.start_index }} - {{ psalaries.end_index }} จากทั้งหมด {{ psalaries.paginator.count }} รายการ</p>
+                    </div>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            {% if psalaries.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ psalaries.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}">
+                                        ก่อนหน้า
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% for num in psalaries.paginator.page_range %}
+                                <li class="page-item {% if psalaries.number == num %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}">
+                                        {{ num }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                            {% if psalaries.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ psalaries.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year }}{% endif %}{% if request.GET.month %}&month={{ request.GET.month }}{% endif %}">
+                                        ถัดไป
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- ...existing pagination code... -->
+        </div>
+    </div>
+</div>
+<style>
+    .pagination {
+        justify-content: center; /* จัดให้อยู่ตรงกลาง */
+    }
+    .pagination .page-item .page-link {
+        margin: 0 5px; /* เพิ่มระยะห่างระหว่างปุ่ม */
+    }
+</style>
+{% endblock %}

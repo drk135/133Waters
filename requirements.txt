@@ -1,0 +1,9 @@
+﻿Django>=4.2
+gunicorn
+mysqlclient
+waitress
+django-import-export
+reportlab
+qrcode[pil]
+django-storages
+google-cloud-storage

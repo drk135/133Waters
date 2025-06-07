@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">รายการเงินเดือน</h4>
+                        <a href="{% url 'ems:psalary_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> กลับไปรายการ
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" id="psalaryForm">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.employee.id_for_label }}" class="form-label">พนักงาน</label>
+                                {{ form.employee }}
+                                {% if form.employee.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.employee.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ form.month.id_for_label }}" class="form-label">เดือน</label>
+                                {{ form.month }}
+                                {% if form.month.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.month.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ form.year.id_for_label }}" class="form-label">ปี</label>
+                                {{ form.year }}
+                                {% if form.year.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.year.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.base_salary.id_for_label }}" class="form-label">เงินเดือนพื้นฐาน</label>
+                                {{ form.base_salary }}
+                                {% if form.base_salary.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.base_salary.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label for="{{ form.plan_days_worked.id_for_label }}" class="form-label">วันทำงานที่กำหนด</label>
+                                {{ form.plan_days_worked }}
+                                {% if form.plan_days_worked.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.plan_days_worked.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ form.days_worked.id_for_label }}" class="form-label">วันทำงานจริง</label>
+                                {{ form.days_worked }}
+                                {% if form.days_worked.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.days_worked.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ form.plan_hrs_worked.id_for_label }}" class="form-label">ชั่วโมงที่กำหนด</label>
+                                {{ form.plan_hrs_worked }}
+                                {% if form.plan_hrs_worked.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.plan_hrs_worked.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ form.hrs_worked.id_for_label }}" class="form-label">ชั่วโมงทำงานจริง</label>
+                                {{ form.hrs_worked }}
+                                {% if form.hrs_worked.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.hrs_worked.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.m_sat_overtime_hrs.id_for_label }}" class="form-label">ชั่วโมง OT (จันทร์-เสาร์)</label>
+                                {{ form.m_sat_overtime_hrs }}
+                                {% if form.m_sat_overtime_hrs.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.m_sat_overtime_hrs.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.sun_overtime_hrs.id_for_label }}" class="form-label">ชั่วโมง OT (อาทิตย์)</label>
+                                {{ form.sun_overtime_hrs }}
+                                {% if form.sun_overtime_hrs.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.sun_overtime_hrs.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.holiday_overtime_hrs.id_for_label }}" class="form-label">ชั่วโมง OT (วันหยุด)</label>
+                                {{ form.holiday_overtime_hrs }}
+                                {% if form.holiday_overtime_hrs.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.holiday_overtime_hrs.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.tax_deduction.id_for_label }}" class="form-label">หักภาษี</label>
+                                {{ form.tax_deduction }}
+                                {% if form.tax_deduction.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.tax_deduction.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.social_security.id_for_label }}" class="form-label">ประกันสังคม</label>
+                                {{ form.social_security }}
+                                {% if form.social_security.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.social_security.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.other_deduction.id_for_label }}" class="form-label">หักอื่นๆ</label>
+                                {{ form.other_deduction }}
+                                {% if form.other_deduction.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.other_deduction.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> บันทึกข้อมูล
+                            </button>
+                            <a href="{% url 'ems:psalary_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> ยกเลิก
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const employeeSelect = document.getElementById('id_employee');
+        const monthSelect = document.getElementById('id_month');
+        const yearInput = document.getElementById('id_year');
+        
+        function calculatePlannedDaysAndHours(year, month) {
+            // Create date object for the first day of selected month
+            const firstDay = new Date(year, month - 1, 1);
+            // Create date object for the last day of month
+            const lastDay = new Date(year, month, 0);
+            
+            let plannedDays = 0;
+            let currentDate = new Date(firstDay);
+            
+            // Loop through each day of the month
+            while (currentDate <= lastDay) {
+                // Skip Sundays (0 is Sunday)
+                if (currentDate.getDay() !== 0) {
+                    plannedDays++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            // Calculate planned hours (8 hours per planned day)
+            const plannedHours = plannedDays * 8;
+            
+            // Set the values in the form
+            document.getElementById('id_plan_days_worked').value = plannedDays;
+            document.getElementById('id_plan_hrs_worked').value = plannedHours;
+        }
+    
+        function updateActualWorkData() {
+    const employeeId = employeeSelect.value;
+    const month = monthSelect.value;
+    const year = yearInput.value;
+    
+    if (employeeId && month && year) {
+        // Calculate planned days and hours
+        calculatePlannedDaysAndHours(year, month);
+        
+        // Get actual working data
+        fetch(`/ems/get-employee-working-data/?employee_id=${employeeId}&year=${year}&month=${month}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.days_worked !== undefined) {
+                    document.getElementById('id_days_worked').value = data.days_worked;
+                    document.getElementById('id_hrs_worked').value = data.hours_worked;
+                    document.getElementById('id_m_sat_overtime_hrs').value = data.m_sat_overtime_hrs;
+                    document.getElementById('id_sun_overtime_hrs').value = data.sun_overtime_hrs;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+}
+    
+        function updateBaseSalary(employeeId) {
+            if (employeeId) {
+                fetch(`/ems/get-employee-base-salary/?employee_id=${employeeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.base_salary) {
+                            document.getElementById('id_base_salary').value = data.base_salary;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+        
+        // Add event listeners
+        employeeSelect.addEventListener('change', function() {
+            updateBaseSalary(this.value);
+            updateActualWorkData();
+        });
+    
+        monthSelect.addEventListener('change', updateActualWorkData);
+        yearInput.addEventListener('change', updateActualWorkData);
+        
+        // Initialize if values are already selected
+        if (employeeSelect.value && monthSelect.value && yearInput.value) {
+            updateBaseSalary(employeeSelect.value);
+            updateActualWorkData();
+        }
+    });
+    </script>
+{% endblock %}

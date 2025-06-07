@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}ลบค่าใช้จ่าย{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="alert alert-danger">
+        <h4>ยืนยันการลบค่าใช้จ่าย</h4>
+        <p>คุณต้องการลบ <strong>{{ expense.expense_type }}</strong> จำนวน <strong>{{ expense.amount|floatformat:2 }}</strong> ใช่หรือไม่?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash"></i> ลบ
+            </button>
+            <a href="{% url 'expense_list' %}" class="btn btn-secondary">ยกเลิก</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

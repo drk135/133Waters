@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container" style="margin-top: 0; padding-top: 0;">
+    <div class="text-center" style="margin-top: -50px;">
+        <img src="{% static 'images/133.png' %}" 
+             class="img-fluid mb-2 mx-auto d-block" 
+             alt="133 Logo"
+             style="max-height: 150px;">
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="row mt-4 g-4">
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">คลังสินค้า</h5>
+                        <p class="card-text">จัดการคลังสินค้าและที่จัดเก็บ</p>
+                        <a href="{% url 'warehouse_list' %}" class="btn btn-primary">
+                            <i class="fas fa-warehouse"></i> จัดการคลังสินค้า
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">สินค้า</h5>
+                        <p class="card-text">จัดการรายการสินค้าและสต็อก</p>
+                        <a href="{% url 'product_list' %}" class="btn btn-success">
+                            <i class="fas fa-box"></i> จัดการสินค้า
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">ลูกค้า</h5>
+                        <p class="card-text">จัดการข้อมูลลูกค้า</p>
+                        <a href="{% url 'customer_list' %}" class="btn btn-info">
+                            <i class="fas fa-users"></i> จัดการลูกค้า
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">การขาย</h5>
+                        <p class="card-text">จัดการรายการขายและธุรกรรม</p>
+                        <a href="{% url 'sale_list' %}" class="btn btn-warning">
+                            <i class="fas fa-shopping-cart"></i> จัดการการขาย
+                        </a>
+                    </div>
+                </div>
+            </div>   
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">ใบเสนอราคา</h5>
+                        <p class="card-text">จัดการและสร้างใบเสนอราคา</p>
+                        <a href="{% url 'quatation_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-file-invoice"></i> จัดการใบเสนอราคา
+                        </a>
+                    </div>
+                </div>
+            </div>         
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">ราคาตลาด</h5>
+                        <p class="card-text">จัดการราคาตามตลาดและแนวโน้ม</p>
+                        <a href="{% url 'market_price_list' %}" class="btn btn-danger">
+                            <i class="fas fa-chart-line"></i> จัดการราคาตลาด
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- ...existing cards... -->
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">ต้นทุนสินค้า</h5>
+                        <p class="card-text">จัดการและติดตามต้นทุนสินค้า</p>
+                        <a href="{% url 'cost_price_list' %}" class="btn btn-dark">
+                            <i class="fas fa-coins"></i> จัดการราคาต้นทุน
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- ...existing cards... -->
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">ค่าใช้จ่าย</h5>
+                        <p class="card-text">บันทึกและตรวจสอบค่าใช้จ่ายของกิจการ</p>
+                        <a href="{% url 'expense_list' %}" class="btn btn-primary">
+                            <i class="fas fa-file-invoice-dollar"></i> จัดการค่าใช้จ่าย
+                        </a>
+                    </div>
+                </div>
+            </div>
+<!-- ...existing code... -->
+<!-- ...existing code... -->
+        </div>
+
+    {% else %}
+        <div class="alert alert-info text-center">
+            กรุณา <a href="{% url 'login' %}" class="alert-link">เข้าสู่ระบบ</a> เพื่อใช้งาน
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+</style>
+<style>
+    .container {
+        margin-top: 0 !important; /* ลดระยะห่างด้านบน */
+        padding-top: 0 !important; /* ลด padding ด้านบน */
+    }
+    </style>
+    <style>
+        .text-center {
+            margin-top: -20px; /* ลดระยะห่างด้านบน */
+        }
+        </style>
+{% endblock %}

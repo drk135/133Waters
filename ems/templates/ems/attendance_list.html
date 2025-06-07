@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">บันทึกเวลา</h4>
+                <div class="text-center">
+                    <div class="small text-muted">จำนวนทั้งหมด</div>
+                    <div class="fw-bold">{{ total_count }}</div>
+                </div>
+                
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <form method="get" class="d-flex">
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="search" 
+                                   value="{{ search_query }}"
+                                   placeholder="ค้นหาชื่อหรือรหัสพนักงาน...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            
+                            {% if search_query %}
+                            <a href="{% url 'ems:attendance_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+                        <i class="fas fa-file-import"></i> นำเข้า CSV
+                    </button>
+                    <a href="{% url 'ems:attendance_export' %}" class="btn btn-info btn-sm me-2">
+                        <i class="fas fa-file-export"></i> ส่งออก CSV
+                    </a>
+                    <a href="{% url 'ems:attendance_create' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> เพิ่มข้อมูล
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>พนักงาน</th>
+                            <th>วันที่</th>
+                            <th>เวลาเข้า</th>
+                            <th>เวลาออก</th>
+                            <th>ชั่วโมง OT</th>
+                            <th>สถานะ</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attendance in attendances %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if attendance.employee.profile_picture %}
+                                        <img src="{{ attendance.employee.profile_picture.url }}" 
+                                             class="rounded-circle me-2" 
+                                             width="32" height="32">
+                                    {% else %}
+                                        <div class="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                             style="width: 32px; height: 32px;">
+                                            <i class="fas fa-user text-white small"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold">{{ attendance.employee.first_name }} {{ attendance.employee.last_name }}</div>
+                                        <div class="text-muted small">ID: {{ attendance.employee.employee_id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ attendance.date|date:"D, d M Y" }}</td>
+                            <td>
+                                {% if attendance.clock_in %}
+                                    <span class="text-success">
+                                        <i class="fas fa-sign-in-alt me-1"></i>
+                                        {{ attendance.clock_in|time:"H:i" }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">--:--</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if attendance.clock_out %}
+                                    <span class="text-danger">
+                                        <i class="fas fa-sign-out-alt me-1"></i>
+                                        {{ attendance.clock_out|time:"H:i" }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">--:--</span>
+                                {% endif %}
+                            </td>
+                            <!-- In the table body, after clock_out column -->
+                            <td>
+                                {% if attendance.clock_in and attendance.clock_out %}
+                                    {% with ot_hours=attendance.calculate_overtime_hours %}
+                                        {% if ot_hours > 0 %}
+                                            <span class="{% if attendance.date.isoweekday == 7 %}text-danger{% else %}text-primary{% endif %}">
+                                                <i class="fas fa-clock me-1"></i>
+                                                {{ ot_hours|floatformat:1 }}h
+                                                {% if attendance.date.isoweekday == 7 %}
+                                                    <small class="text-muted">(x2)</small>
+                                                {% else %}
+                                                    <small class="text-muted">(x1.5)</small>
+                                                {% endif %}
+                                            </span>
+                                            <div class="text-muted small">
+                                                {% with total_hours=attendance.calculate_working_hours %}
+                                                    ({{ total_hours|floatformat:1 }}h total)
+                                                {% endwith %}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if attendance.status == 'present' %}success{% elif attendance.status == 'absent' %}danger{% else %}warning{% endif %}">
+                                    {{ attendance.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'ems:attendance_edit' attendance.pk %}" class="btn btn-sm btn-info me-1">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'ems:attendance_delete' attendance.pk %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-clock fa-2x mb-2"></i>
+                                    <p class="mb-0">ไม่พบข้อมูลการลงเวลา</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if attendances.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if attendances.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" aria-label="First">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ attendances.previous_page_number }}" aria-label="Previous">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in attendances.paginator.page_range %}
+                        {% if attendances.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > attendances.number|add:'-3' and num < attendances.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if attendances.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ attendances.next_page_number }}" aria-label="Next">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ attendances.paginator.num_pages }}" aria-label="Last">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <div class="text-center text-muted small">
+                Showing {{ attendances.start_index }}-{{ attendances.end_index }} 
+                of {{ attendances.paginator.count }} records
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">นำเข้าข้อมูลการลงเวลา</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'ems:attendance_import' %}" 
+                  enctype="multipart/form-data" id="importForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="importError">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="attendance_file" class="form-label">เลือกไฟล์ CSV</label>
+                        <input type="file" class="form-control" id="attendance_file" 
+                               name="attendance_file" accept=".csv" required>
+                        <div class="form-text">ขนาดไฟล์สูงสุด: 5MB</div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading mb-2">
+                            <i class="fas fa-info-circle me-2"></i>ข้อกำหนดรูปแบบไฟล์ CSV
+                        </h6>
+                        <div class="small">
+                            <p class="mb-2">คอลัมน์ที่จำเป็น:</p>
+                            <ul class="mb-2">
+                                <li>รหัสพนักงาน</li>
+                                <li>วันที่ (รูปแบบที่รองรับ:
+                                    <ul>
+                                        <li>YYYY-MM-DD (เช่น 2025-03-22)</li>
+                                        <li>DD/MM/YY (เช่น 22/03/25)</li>
+                                        <li>DD-MM-YYYY (เช่น 22-03-2025)</li>
+                                        <li>DD/MM/YYYY (เช่น 22/03/2025)</li>
+                                    </ul>
+                                </li>
+                                <li>เวลาเข้า (HH:MM, เช่น 08:00)</li>
+                                <li>เวลาออก (HH:MM, เช่น 17:00)</li>
+                                <li>สถานะ (มาทำงาน/ขาดงาน/มาสาย)</li>
+                            </ul>
+                            <p class="mb-1">ตัวอย่างเนื้อหาไฟล์ CSV:</p>
+                            <pre class="bg-light p-2 rounded">รหัสพนักงาน,วันที่,เวลาเข้า,เวลาออก,สถานะ
+13303250001,2025-03-22,08:00,17:00,มาทำงาน
+13303250002,22/03/25,08:30,17:30,มาสาย
+13303250003,22-03-2025,09:00,18:00,มาทำงาน</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-1"></i> อัพโหลด
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

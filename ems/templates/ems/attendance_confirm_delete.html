@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">ยืนยันการลบข้อมูล</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading mb-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i>คำเตือน
+                        </h5>
+                        <p class="mb-0">คุณแน่ใจหรือไม่ว่าต้องการลบบันทึกการลงเวลางานนี้?</p>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                {% if attendance.employee.profile_picture %}
+                                    <img src="{{ attendance.employee.profile_picture.url }}" 
+                                         class="rounded-circle me-3" 
+                                         width="48" height="48">
+                                {% else %}
+                                    <div class="bg-secondary rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                         style="width: 48px; height: 48px;">
+                                        <i class="fas fa-user fa-lg text-white"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <h5 class="mb-0">{{ attendance.employee.first_name }} {{ attendance.employee.last_name }}</h5>
+                                    <div class="text-muted small">รหัสพนักงาน: {{ attendance.employee.employee_id }}</div>
+                                </div>
+                            </div>
+
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-calendar me-2 text-muted"></i>
+                                    {{ attendance.date|date:"D, d M Y" }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-sign-in-alt me-2 text-success"></i>
+                                    {% if attendance.clock_in %}
+                                        {{ attendance.clock_in|time:"H:i" }}
+                                    {% else %}
+                                        <span class="text-muted">--:--</span>
+                                    {% endif %}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-sign-out-alt me-2 text-danger"></i>
+                                    {% if attendance.clock_out %}
+                                        {{ attendance.clock_out|time:"H:i" }}
+                                    {% else %}
+                                        <span class="text-muted">--:--</span>
+                                    {% endif %}
+                                </li>
+                                <li>
+                                    <i class="fas fa-info-circle me-2 text-muted"></i>
+                                    <span class="badge bg-{% if attendance.status == 'present' %}success{% elif attendance.status == 'absent' %}danger{% else %}warning{% endif %}">
+                                        {{ attendance.get_status_display }}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i> ลบบันทึก
+                            </button>
+                            <a href="{% url 'ems:attendance_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> ยกเลิก
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

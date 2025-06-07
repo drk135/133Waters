@@ -1,0 +1,241 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Salary Slip - {{ psalary.employee.get_full_name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.5;
+            color: #2c3e50;
+            background: #fff;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            position: relative;
+        }
+        .logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100px;
+            height: auto;
+        }
+        .company-details {
+            margin-left: 120px; /* Space for logo */
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .company-address {
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+        .slip-title {
+            font-size: 20px;
+            margin: 15px 0;
+            color: #3498db;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .pay-period {
+        font-size: 14px;
+        color: #7f8c8d;
+        font-weight: 500;
+        text-align: right;
+        padding-right: 10px;
+    }
+    .employee-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+    .salary-details-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        margin-bottom: 20px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+    .info-item {
+        padding: 8px 15px;
+        border-bottom: 1px solid #e1e8ed;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    .label {
+        color: #7f8c8d;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    .value {
+        font-weight: 600;
+        color: #202224;
+        font-size: 13px;
+        text-align: right;
+        min-width: 120px;
+    }
+        .total-section {
+            margin-top: 30px;
+            border-top: 2px solid #3498db;
+            padding-top: 20px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .net-salary {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: right;
+            color: #2c3e50;
+        }
+        .net-salary-amount {
+            color: #27ae60;
+            font-size: 24px;
+            margin-top: 5px;
+        }
+        .signature-section {
+            margin-top: 60px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+        .signature-line {
+            border-top: 1px solid #bdc3c7;
+            margin-top: 30px;
+            padding-top: 10px;
+            text-align: center;
+            color: #7f8c8d;
+        }
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 100px;
+            color: rgba(52, 152, 219, 0.05);
+            z-index: -1;
+            white-space: nowrap;
+        }
+        @media print {
+            .no-print { display: none; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body>
+    <div class="watermark">SALARY SLIP</div>
+    <div class="header">
+        <img src="{% static 'images/133.png' %}" alt="{{ company_name }}" class="logo">
+        <div class="company-details">
+            <div class="company-name">{{ company_name }}</div>
+            <div class="company-address">{{ company_address }}</div>
+        </div>
+        <div class="slip-title">ใบแจ้งเงินเดือน</div>
+        <div class="pay-period">{{ psalary.get_month_display }} {{ psalary.year }}</div>
+    </div>
+
+    <!-- Employee Info Section -->
+    <div class="employee-info-grid">
+        <div class="info-item">
+            <div class="label">รหัสพนักงาน</div>
+            <div class="value">{{ psalary.employee.employee_id }}</div>
+        </div>
+        <div class="info-item">
+            <div class="label">ชื่อ-นามสกุล</div>
+            <div class="value">{{ psalary.employee.first_name }} {{ psalary.employee.last_name }}</div>
+        </div>
+        <div class="info-item">
+            <div class="label">ตำแหน่ง</div>
+            <div class="value">{{ psalary.employee.position }}</div>
+        </div>
+    </div>
+
+    <!-- Salary Details Section -->
+   <!-- Replace the salary details, overtime and deductions sections with: -->
+<div class="salary-details-grid">
+    <!-- Salary Details -->
+    <div class="info-item">
+        <span class="label">เงินเดือน</span>
+        <span class="value">฿{{ psalary.base_salary|floatformat:2 }}</span>
+    </div>
+    <div class="info-item">
+        <span class="label">วันทำงาน</span>
+        <span class="value">{{ psalary.days_worked }}/{{ psalary.plan_days_worked }}</span>
+    </div>
+    <div class="info-item">
+        <span class="label">ชั่วโมงทำงาน</span>
+        <span class="value">{{ psalary.hrs_worked }}/{{ psalary.plan_hrs_worked }}</span>
+    </div>
+
+    <!-- Overtime Section -->
+    <div class="info-item">
+        <span class="label">OT จันทร์-เสาร์ (×1.5)</span>
+        <span class="value">{{ psalary.m_sat_overtime_hrs }} ชั่วโมง</span>
+    </div>
+    <div class="info-item">
+        <span class="label">OT อาทิตย์ (×2)</span>
+        <span class="value">{{ psalary.sun_overtime_hrs }} ชั่วโมง</span>
+    </div>
+    <div class="info-item">
+        <span class="label">OT วันหยุด (×3)</span>
+        <span class="value">{{ psalary.holiday_overtime_hrs }} ชั่วโมง</span>
+    </div>
+
+    <!-- Deductions Section -->
+    <div class="info-item">
+        <span class="label">ภาษี</span>
+        <span class="value">฿{{ psalary.tax_deduction|floatformat:2 }}</span>
+    </div>
+    <div class="info-item">
+        <span class="label">ประกันสังคม</span>
+        <span class="value">฿{{ psalary.social_security|floatformat:2 }}</span>
+    </div>
+    <div class="info-item">
+        <span class="label">หักอื่นๆ</span>
+        <span class="value">฿{{ psalary.other_deduction|floatformat:2 }}</span>
+    </div>
+</div>
+    <!-- Net Salary Section -->
+    <div class="total-section">
+        <div class="net-salary">
+            Net Salary
+            <div class="net-salary-amount">฿{{ psalary.calculate_net_salary|floatformat:2 }}</div>
+        </div>
+    </div>
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+        <div class="signature-line">Employee Signature</div>
+        <div class="signature-line">Employer Signature</div>
+    </div>
+
+    <div class="no-print" style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="fas fa-print me-1"></i> Print Slip
+        </button>
+    </div>
+</body>
+</html>

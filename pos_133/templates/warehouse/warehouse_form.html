@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if warehouse %}
+                            แก้ไขข้อมูลคลังสินค้า
+                        {% else %}
+                            เพิ่มคลังสินค้าใหม่
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="warehouse_w" class="form-label">ชื่อคลังสินค้า</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="warehouse_w" 
+                                   name="warehouse_w" 
+                                   value="{{ warehouse.warehouse_w|default:'' }}" 
+                                   required
+                                   placeholder="ระบุชื่อคลังสินค้า">
+                            {% if form.warehouse_w.errors %}
+                                {% for error in form.warehouse_w.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="location" class="form-label">ที่อยู่</label>
+                            <textarea class="form-control" 
+                                      id="location" 
+                                      name="location" 
+                                      rows="3" 
+                                      required
+                                      placeholder="ระบุที่อยู่คลังสินค้า">{{ warehouse.location|default:'' }}</textarea>
+                            {% if form.location.errors %}
+                                {% for error in form.location.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'warehouse_list' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> ยกเลิก
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> บันทึก
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

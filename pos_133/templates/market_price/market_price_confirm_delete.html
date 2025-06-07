@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">ยืนยันการลบ</h4>
+                </div>
+                <div class="card-body">
+                    <p>คุณแน่ใจหรือไม่ที่จะลบราคาตลาด {{ price.market_price|floatformat:2 }} บาท?</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'market_price_list' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> ยกเลิก
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> ยืนยันการลบ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">ยืนยันการลบ</h4>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">คุณแน่ใจหรือไม่ที่จะลบรายการขายนี้?</p>
+                    
+                    <dl class="row">
+                        <dt class="col-sm-4">รหัสการขาย:</dt>
+                        <dd class="col-sm-8">{{ sale.sale_code }}</dd>
+                        
+                        <dt class="col-sm-4">สินค้า:</dt>
+                        <dd class="col-sm-8">{{ sale.productid }}</dd>
+                        
+                        <dt class="col-sm-4">ลูกค้า:</dt>
+                        <dd class="col-sm-8">{{ sale.customerid }}</dd>
+                        
+                        <dt class="col-sm-4">จำนวน:</dt>
+                        <dd class="col-sm-8">{{ sale.sale_quantity }}</dd>
+                        
+                        <dt class="col-sm-4">ราคารวม:</dt>
+                        <dd class="col-sm-8">{{ sale.revenue|floatformat:2 }} บาท</dd>
+                    </dl>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'sale_list' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> ยกเลิก
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> ยืนยันการลบ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

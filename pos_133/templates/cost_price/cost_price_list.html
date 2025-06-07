@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-coins"></i> ราคาต้นทุน</h2>
+        <a href="{% url 'cost_price_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> เพิ่มราคาต้นทุน
+        </a>
+    </div>
+
+   
+    <div class="card shadow">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>ลำดับ</th>
+                        <th>ประเภทสินค้า</th>
+                        <th>ราคาต้นทุน</th>
+                        <th>ชนิดสินค้า</th>
+                        <th>วันที่บันทึก</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cost in costs %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ cost.pname }}</td>
+                        <td>{{ cost.cost_price|floatformat:2 }} บาท</td>
+                        <td>{{ cost.product_type }}</td>
+                        <td>{{ cost.date|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'cost_price_edit' cost.pk %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a> ||
+                                <a href="{% url 'cost_price_delete' cost.pk %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <i class="fas fa-coins fa-2x text-muted"></i>
+                            <p class="mt-2">ไม่พบข้อมูลราคาต้นทุน</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

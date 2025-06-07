@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% csrf_token %}
+<!-- Add CSS for blinking animation -->
+<style>
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+    
+    .blink {
+        animation: blink 1.5s infinite;
+    }
+    
+    .payment-status {
+        cursor: pointer;
+    }
+
+    .badge {
+        transition: all 0.3s ease;
+    }
+
+    .badge:hover {
+        opacity: 0.8;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shopping-cart"></i> รายการขาย</h2>
+        <div>
+            <button id="generate-invoice" class="btn btn-success" onclick="generateInvoice()">
+                <i class="fas fa-file-invoice"></i> ออกใบแจ้งหนี้
+            </button>
+            <a href="{% url 'sale_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> เพิ่มการขาย
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="select-all" onclick="toggleSelectAll(this)">
+                        </th>
+                        <th>รหัสการขาย</th>
+                        <th>สินค้า</th>
+                        <th>ลูกค้า</th>
+                        <th>จำนวน</th>
+                        <th>ราคาขาย</th>
+                        <th>รายรับ</th>
+                        <th>สถานะ</th>
+                        <th>วันที่ขาย</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in page_obj %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="sale-checkbox" value="{{ sale.pk }}">
+                        </td>
+                        <td>{{ sale.sale_code }}</td>
+                        <td>{{ sale.productid.pname }}</td>
+                        <td>{{ sale.customerid.first_name }}</td>
+                        <td>{{ sale.sale_quantity }}</td>
+                        <td>{{ sale.sale_price.market_price|floatformat:2 }} บาท</td>
+                        <td>{{ sale.revenue|floatformat:2 }} บาท</td>
+                        <td>
+                            <span class="badge {% if sale.payment_status == 'paid' %}bg-success
+                                       {% elif sale.payment_status == 'pending' %}bg-warning blink
+                                       {% else %}bg-danger blink{% endif %}">
+                                {{ sale.get_payment_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ sale.sale_date|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="btn-group">
+                                {% if not sale.payment_status == 'paid' or request.user.is_superuser %}
+                                    <a href="{% url 'sale_edit' sale.pk %}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>แก้ไข
+                                    </a>
+                                    <a href="{% url 'sale_delete' sale.pk %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>ลบ
+                                    </a>
+                                {% endif %}
+                                
+                                {% if not sale.payment_status == 'paid' or request.user.is_superuser %}
+                                    <button onclick="togglePaymentStatus(this)" 
+                                            data-sale-id="{{ sale.pk }}"
+                                            class="btn btn-sm {% if sale.payment_status == 'paid' %}btn-success{% else %}btn-warning{% endif %}">
+                                        <i class="fas fa-money-bill"></i>ชำระเงิน
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-2x text-muted"></i>
+                            <p class="mt-2">ไม่พบข้อมูลการขาย</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-center mt-4">
+                <nav>
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endfor %}
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function togglePaymentStatus(button) {
+        const saleId = button.getAttribute('data-sale-id');
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        button.disabled = true;
+        
+        fetch(`/sale/${saleId}/toggle-payment/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // รีโหลดหน้าเพื่อแสดงการเปลี่ยนแปลง
+            } else {
+                alert(data.error || 'เกิดข้อผิดพลาดในการอัพเดทสถานะ');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('เกิดข้อผิดพลาดในการอัพเดทสถานะ');
+        })
+        .finally(() => {
+            button.disabled = false;
+        });
+    }
+    function printInvoice(saleId) {
+        // เปิดหน้าต่างใหม่สำหรับพิมพ์ใบเสร็จ
+        window.open(`/sale/${saleId}/invoice/`, '_blank', 'width=800,height=600');
+    }
+</script>
+
+<script>
+    function printRecord(saleId) {
+        let printWindow = window.open('', '_blank', 'width=800,height=600');
+        let printContent = `
+            <html>
+            <head>
+                <title>ใบบันทึกการขาย #${saleId}</title>
+                <style>
+                    body {
+                        font-family: 'Sarabun', sans-serif;
+                        padding: 20px;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+                    .details {
+                        margin-bottom: 20px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 20px;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    .footer {
+                        margin-top: 30px;
+                        text-align: right;
+                    }
+                    @media print {
+                        .no-print {
+                            display: none;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>ร้าน POS Maliwong133</h2>
+                    <h3>ใบบันทึกการขาย</h3>
+                </div>
+                <div class="details">
+                    <p><strong>รหัสการขาย:</strong> ${document.getElementById('sale-code-' + saleId).textContent}</p>
+                    <p><strong>วันที่:</strong> ${document.getElementById('sale-date-' + saleId).textContent}</p>
+                    <p><strong>ลูกค้า:</strong> ${document.getElementById('customer-' + saleId).textContent}</p>
+                </div>
+                <table>
+                    <tr>
+                        <th>สินค้า</th>
+                        <th>จำนวน</th>
+                        <th>ราคาต่อหน่วย</th>
+                        <th>รวมเงิน</th>
+                    </tr>
+                    <tr>
+                        <td>${document.getElementById('product-' + saleId).textContent}</td>
+                        <td>${document.getElementById('quantity-' + saleId).textContent}</td>
+                        <td>${document.getElementById('price-' + saleId).textContent}</td>
+                        <td>${document.getElementById('revenue-' + saleId).textContent}</td>
+                    </tr>
+                </table>
+                <div class="footer">
+                    <button class="no-print" onclick="window.print()">พิมพ์</button>
+                </div>
+            </body>
+            </html>
+        `;
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+    }
+</script>
+<script>
+    function generateInvoice() {
+        const selectedSales = [];
+        const checkboxes = document.querySelectorAll('.sale-checkbox:checked');
+        
+        // รวบรวม sale_id จาก checkbox ที่ถูกเลือก
+        checkboxes.forEach(checkbox => {
+            selectedSales.push(checkbox.value);
+        });
+
+        if (selectedSales.length === 0) {
+            alert('กรุณาเลือกรายการขายอย่างน้อย 1 รายการ');
+            return;
+        }
+
+        // เปลี่ยนเส้นทางไปยัง URL สำหรับแสดงใบแจ้งหนี้ในหน้าใหม่
+        const salesQuery = selectedSales.join(',');
+        window.open(`/sale/invoice/?sales=${salesQuery}`, '_blank', 'width=800,height=600');
+    }
+</script>
+{% endblock %}

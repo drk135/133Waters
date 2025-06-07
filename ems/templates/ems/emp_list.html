@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>รายชื่อพนักงาน</h2>
+        <a href="{% url 'ems:emp_add' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> เพิ่มพนักงานใหม่
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>รหัสพนักงาน</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>ตำแหน่ง</th>
+                            <th>อีเมล</th>
+                            <th>เลขที่บัญชี</th>
+                            <th>ธนาคาร</th>
+                            <th class="text-center">เอกสาร</th>
+                            <th>การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                        <tr>
+                            <td>{{ employee.employee_id }}</td>
+                            <td>{{ employee.first_name }} {{ employee.last_name }}</td>
+                            <td>{{ employee.position }}</td>
+                            <td>{{ employee.email }}</td>
+                            <td>{{ employee.bank_account }}</td>
+                            <td>{{ employee.bank_name }}</td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="{% url 'ems:emp_edit' employee.pk %}#documents" 
+                                       class="btn btn-sm btn-info">
+                                        <i class="fas fa-folder"></i> 
+                                        <span class="badge bg-secondary">{{ employee.attachments.count }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Upload Modal -->
+                                <div class="modal fade" id="uploadModal{{ employee.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">อัพโหลดเอกสาร - {{ employee.employee_id }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="post" action="{% url 'ems:emp_upload_doc' employee.id %}" enctype="multipart/form-data">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">ประเภทเอกสาร</label>
+                                                        <select name="document_type" class="form-select" required>
+                                                            {% for value, label in document_types %}
+                                                                <option value="{{ value }}">{{ label }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">ชื่อเอกสาร</label>
+                                                        <input type="text" name="title" class="form-control" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">ไฟล์</label>
+                                                        <input type="file" name="file" class="form-control" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">หมายเหตุ</label>
+                                                        <textarea name="notes" class="form-control" rows="3"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                                                    <button type="submit" class="btn btn-primary">อัพโหลด</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{% url 'ems:emp_edit' employee.pk %}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-edit"></i> แก้ไข
+                                </a>
+                                <a href="{% url 'ems:emp_delete' employee.pk %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> ลบ
+                                </a>
+                                <a href="{% url 'ems:emp_card' employee.pk %}" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-id-card"></i> บัตรพนักงาน
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">ไม่พบข้อมูลพนักงาน</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

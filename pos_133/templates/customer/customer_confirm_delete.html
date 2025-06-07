@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">ลบข้อมูลลูกค้า</h4>
+                </div>
+                <div class="card-body">
+                    <p class="alert alert-warning">
+                        คุณแน่ใจหรือไม่ว่าต้องการลบลูกค้า "{{ customer.first_name }} {{ customer.last_name }}" ?
+                    </p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'customer_list' %}" class="btn btn-secondary me-md-2">ยกเลิก</a>
+                            <button type="submit" class="btn btn-danger">ลบ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #f2f2f2;
+        }
+        .total-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    .total-table th, .total-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    .total-table th {
+        background-color: #f2f2f2;
+        text-align: left;
+    }
+    .total-table td {
+        font-weight: bold;
+    }
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+        .centered-footer {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .footer img {
+            display: block;
+            margin: 10px auto;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+<body>
+    <!-- ปุ่มพิมพ์ -->
+    <div class="no-print" style="text-align: right; margin-bottom: 20px;">
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="fas fa-print"></i> พิมพ์ใบแจ้งหนี้
+        </button>
+    </div>
+
+    {% for invoice in invoices %}
+    <div class="invoice-header">
+        <h1>บริษัทมะลิวงษ์ สมาร์ทโซลูชั่น จำกัด</h1>
+        <p>เลขที่ 134 หมู่ 15 หมู่บ้านวังไทร ต.หนองหลวง อ.ลานกระบือ จ.กำแพงเพชร</p>
+        <p>โทร: 097-979-0133 อีเมล : customer@maliwong.com</p>
+    </div>
+
+    <!-- แสดงชื่อลูกค้า -->
+    <div class="customer-info" style="margin-bottom: 20px;">
+        <p><strong>ชื่อลูกค้า:</strong> {{ invoice.customer_name }}</p>
+    </div>
+
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th>ระหัสการขาย</th>
+                <th>สินค้า</th>
+                <th>จำนวน</th>
+                <th>ราคาต่อหน่วย</th>
+                <th>รวม</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in invoice.sales %}
+            <tr>
+                <td>{{ sale.sale_code }}</td>
+                <td>{{ sale.productid.pname }}</td>
+                <td>{{ sale.sale_quantity }}</td>
+                <td>{{ sale.sale_price.market_price }}</td>
+                <td>{{ sale.revenue }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+       
+    </table>
+    <table class="total-table">
+        <thead>
+            <tr>
+                <th>ยอดรวมก่อนหักภาษี</th>
+                <td style="text-align: right;">{{ invoice.total_revenue|floatformat:2 }} บาท</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>ยอดรวมทั้งหมด</th>
+                <td style="text-align: right;">{{ invoice.total_revenue|floatformat:2 }} บาท</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer text-center centered-footer">
+        <p>ขอบคุณที่ใช้บริการ</p>
+        <p>133 น้ำดื่มที่คุณคู่ควร</p>
+        <img src="{% static 'images/133.png' %}" alt="โลโก้บริษัท" style="max-width: 150px; height: auto;">
+        <p>บริษัทมะลิวงษ์ สมาร์ทโซลูชั่น จำกัด</p>
+    </div>
+
+    {% if not forloop.last %}
+    <div class="page-break"></div>
+    {% endif %}
+    {% endfor %}
+</body>
+</html>

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Employee Form Card -->
+           <div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0">เพิ่มชื่อพนักงาน</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                {% for field in form %}
+                    <div class="col-md-6">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> บันทึก
+                </button>
+                <a href="{% url 'ems:emp_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> ยกเลิก
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+            <!-- Attachments Card -->
+            {% if employee and employee.id %}
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">เอกสารพนักงาน</h4>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="fas fa-plus"></i> เพิ่มเอกสาร
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if employee.attachments.exists %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ประเภท</th>
+                                        <th>ชื่อเอกสาร</th>
+                                        <th>ขนาด</th>
+                                        <th>วันที่อัพโหลด</th>
+                                        <th>ดำเนินการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for attachment in employee.attachments.all %}
+                                    <tr>
+                                        <td>{{ attachment.get_document_type_display }}</td>
+                                        <td>{{ attachment.title }}</td>
+                                        <td>{{ attachment.file_size }}</td>
+                                        <td>{{ attachment.uploaded_at|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            <a href="{{ attachment.file.url }}" class="btn btn-sm btn-info" target="_blank">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-danger delete-doc" data-id="{{ attachment.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-3">ยังไม่มีเอกสารที่อัพโหลด</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Upload Modal -->
+            <div class="modal fade" id="uploadModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">อัพโหลดเอกสาร</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="post" action="{% url 'ems:emp_upload_doc' employee.id %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">ประเภทเอกสาร</label>
+                                    <select name="document_type" class="form-select" required>
+                                        {% for value, label in document_types %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ชื่อเอกสาร</label>
+                                    <input type="text" name="title" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ไฟล์</label>
+                                    <input type="file" name="file" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">หมายเหตุ</label>
+                                    <textarea name="notes" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                                <button type="submit" class="btn btn-primary">อัพโหลด</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if employee and employee.id %}
+<script>
+document.querySelectorAll('.delete-doc').forEach(button => {
+    button.addEventListener('click', function() {
+        if (confirm('คุณแน่ใจหรือไม่ที่จะลบเอกสารนี้?')) {
+            const docId = this.dataset.id;
+            fetch(`{% url 'ems:emp_delete_doc' 0 %}`.replace('0', docId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

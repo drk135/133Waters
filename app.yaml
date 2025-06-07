@@ -1,0 +1,4 @@
+runtime: python39
+entrypoint: waitress-serve pos_maliwong.wsgi:application
+env_variables:
+  DEBUG: False
